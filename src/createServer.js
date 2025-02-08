@@ -1,14 +1,13 @@
 /* eslint-disable max-len */
 const http = require('http');
-const url = require('url');
 
 const { convertToCase } = require('./convertToCase');
 
 function createServer() {
   return http.createServer((req, res) => {
-    const parsedUrl = url.URL(req.url, true);
-    const textToConvert = parsedUrl.pathname.slise(1);
-    const caseType = parsedUrl.query.toCase;
+    const parsedUrl = new URL(req.url, 'http://localhost');
+    const textToConvert = parsedUrl.pathname.slice(1);
+    const caseType = parsedUrl.searchParams.get('toCase');
 
     const errors = [];
 
@@ -43,16 +42,15 @@ function createServer() {
       return;
     }
 
-    const result = convertToCase(caseType, textToConvert);
+    const result = convertToCase(textToConvert, caseType);
 
     res.writeHead(200, { 'Content-Type': 'application/json' });
 
     res.end(
       JSON.stringify({
-        originalCase: result.convertedText,
+        ...result,
         targetCase: caseType,
-        originText: textToConvert,
-        convertedText: result.convertedText,
+        originalText: textToConvert,
       }),
     );
   });
